@@ -16,20 +16,33 @@ public class ChatClient {
             BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
             String userInput;
 
+            // Thread para receber mensagens do servidor
+            Thread serverThread = new Thread(() -> {
+                try {
+                    String serverResponse;
+                    while ((serverResponse = in.readLine()) != null) {
+                        System.out.println("Servidor: " + serverResponse);
+                    }
+                } catch (IOException e) {
+                    System.out.println("Conexão com o servidor perdida.");
+                    System.exit(0);
+                }
+            });
+            serverThread.start();
+
             while ((userInput = stdIn.readLine()) != null) {
                 out.println(userInput);
 
                 if (userInput.equalsIgnoreCase("SAIR")) {
                     break;
                 }
-
-                System.out.println("Servidor: " + in.readLine());
             }
 
             in.close();
             out.close();
             socket.close();
         } catch (IOException e) {
+            System.out.println("Erro ao conectar-se ao servidor.");
             e.printStackTrace();
         }
     }
