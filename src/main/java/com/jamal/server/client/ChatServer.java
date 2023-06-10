@@ -63,7 +63,9 @@ public class ChatServer {
                 clientWriters.remove(clientWriter);
                 System.out.println("Cliente desconectado.");
             } catch (IOException e) {
-                e.printStackTrace();
+                // IOException ocorre quando há uma desconexão inesperada do cliente
+                System.out.println("Erro na conexão com o cliente. Cliente desconectado.");
+                clientWriters.remove(clientWriter);
             }
         }
     }
