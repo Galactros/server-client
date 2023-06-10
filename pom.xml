@@ -11,4 +11,56 @@
         <maven.compiler.target>17</maven.compiler.target>
         <exec.mainClass>com.jamal.server.client.ServerClient</exec.mainClass>
     </properties>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <finalName>
+                        app
+                    </finalName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>server</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>chatserver</classifier>
+                            <archive>
+                                <manifest>
+                                    <mainClass>
+                                        com.jamal.server.client.ChatServer
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>client</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>chatclient</classifier>
+                            <archive>
+                                <manifest>
+                                    <mainClass>
+                                        com.jamal.server.client.ChatClient
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
