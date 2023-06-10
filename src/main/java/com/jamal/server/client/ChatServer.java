@@ -6,36 +6,71 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChatServer {
+    private static List<PrintWriter> clientWriters = new ArrayList<>();
+
     public static void main(String[] args) {
         try {
             ServerSocket serverSocket = new ServerSocket(12345);
-            System.out.println("Servidor iniciado. Aguardando conexão do cliente...");
+            System.out.println("Servidor iniciado. Aguardando conexões de clientes...");
 
-            Socket clientSocket = serverSocket.accept();
-            System.out.println("Cliente conectado.");
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("Cliente conectado.");
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                clientWriters.add(out);
 
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                System.out.println("Cliente: " + inputLine);
-                out.println("Servidor: " + inputLine);
-
-                if (inputLine.equalsIgnoreCase("SAIR")) {
-                    break;
-                }
+                ClientHandler clientHandler = new ClientHandler(clientSocket, out);
+                new Thread(clientHandler).start();
             }
-
-            in.close();
-            out.close();
-            clientSocket.close();
-            serverSocket.close();
-            System.out.println("Conexão encerrada.");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static class ClientHandler implements Runnable {
+        private Socket clientSocket;
+        private PrintWriter clientWriter;
+
+        public ClientHandler(Socket clientSocket, PrintWriter clientWriter) {
+            this.clientSocket = clientSocket;
+            this.clientWriter = clientWriter;
+        }
+
+        @Override
+        public void run() {
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    System.out.println("Cliente: " + inputLine);
+
+                    if (inputLine.equalsIgnoreCase("SAIR")) {
+                        break;
+                    }
+
+                    broadcast("Cliente: " + inputLine);
+                }
+
+                in.close();
+                clientSocket.close();
+                clientWriter.close();
+                clientWriters.remove(clientWriter);
+                System.out.println("Cliente desconectado.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void broadcast(String message) {
+        for (PrintWriter writer : clientWriters) {
+            writer.println("Servidor: " + message);
         }
     }
 }
